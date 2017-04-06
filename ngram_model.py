@@ -29,10 +29,27 @@ def train_ngrams(dataset):
     bigram_counts = dict()
     unigram_counts = dict()
     token_count = 0
-    import ipdb; ipdb.set_trace()
-    ### YOUR CODE HERE
-    raise NotImplementedError
-    ### END YOUR CODE
+
+    for sent in dataset:
+        for i in xrange(2,len(sent)):
+            uni = sent[i]
+            bi = (sent[i-1], sent[i])
+            tri = (sent[i-2], sent[i-1], sent[i])
+
+            if uni not in unigram_counts:
+                unigram_counts[uni] = 0
+
+            if bi not in bigram_counts:
+                bigram_counts[bi] = 0
+
+            if tri not in trigram_counts:
+                trigram_counts[tri] = 0
+
+            unigram_counts[uni] += 1
+            bigram_counts[bi] += 1
+            trigram_counts[tri] += 1
+            token_count += 1
+
     return trigram_counts, bigram_counts, unigram_counts, token_count
 
 def evaluate_ngrams(eval_dataset, trigram_counts, bigram_counts, unigram_counts, train_token_count, lambda1, lambda2):
