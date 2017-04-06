@@ -75,8 +75,13 @@ def test_ngram():
     print "#tokens: " + str(token_count)
     perplexity = evaluate_ngrams(S_dev, trigram_counts, bigram_counts, unigram_counts, token_count, 0.5, 0.4)
     print "#perplexity: " + str(perplexity)
-    ### YOUR CODE HERE
-    ### END YOUR CODE
+
+    # Lambda grid search
+    for lambda1 in np.arange(0.0, 1.0, 0.1):
+        for lambda2 in np.arange(0.0, 1.0 - lambda1, 0.1):
+            perplexity = evaluate_ngrams(S_dev, trigram_counts, bigram_counts, unigram_counts, token_count, lambda1, lambda2)
+
+            print 'lamda1: %.2f lambda2: %.2f lambda3: %.2f perplexity: %f' % (lambda1, lambda2, 1.0 - lambda1 - lambda2, perplexity)
 
 if __name__ == "__main__":
     test_ngram()
