@@ -58,11 +58,19 @@ def forward_backward_prop(data, labels, params, dimensions):
     ofs += H * Dy
     b2 = np.reshape(params[ofs:ofs + Dy], (1, Dy))
 
+    M = data.shape[0]
     ### YOUR CODE HERE: forward propagation
-    raise NotImplementedError
+    a = np.matmul(data, W1) + np.tile(b1, (M, H))
+    h = sigmoid(a)
+    theta = np.matmul(h,W2) + np.tile(b2, (M,Dy))
+    output = softmax(theta)
+    cost = np.sum(np.mul(-np.log(output),labels))
+    
     ### END YOUR CODE
 
     ### YOUR CODE HERE: backward propagation
+    gradb2 = output - labels
+    gradW2 = np.matmul(h.transpose(), gradb2)
     raise NotImplementedError
     ### END YOUR CODE
 
