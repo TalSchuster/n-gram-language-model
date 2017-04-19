@@ -52,7 +52,7 @@ def train_ngrams(dataset):
 
                 trigram_counts[tri] += 1
 
-            token_count += 1
+                token_count += 1
 
     return trigram_counts, bigram_counts, unigram_counts, token_count
 
@@ -82,7 +82,6 @@ def evaluate_ngrams(eval_dataset, trigram_counts, bigram_counts, unigram_counts,
     """
     perplexity = 0
     for sentence in eval_dataset:
-        prob_sentence = np.float64(1)
         for word_num in xrange(2, len(sentence)):
             # Calculating the three probabilities (unigram, bigram and trigram)
             prob_unigram = get_unigram_probabilty(sentence[word_num], unigram_counts, train_token_count)
@@ -92,9 +91,8 @@ def evaluate_ngrams(eval_dataset, trigram_counts, bigram_counts, unigram_counts,
             # Calculating the prob. of this word to be the next word in the
             # sentence.
             prob_word = lambda1 * prob_unigram + lambda2 * prob_bigram + (1 - lambda1 - lambda2) * prob_trigram
-            prob_sentence *= prob_word
-        perplexity += np.log2(prob_sentence)
-    perplexity /= len(eval_dataset)
+            perplexity += np.log2(prob_word)
+    perplexity /= train_token_count
     perplexity = np.power(2, -perplexity)
     return perplexity
 
