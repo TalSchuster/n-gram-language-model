@@ -38,7 +38,7 @@ def softmax(x):
         x = x / x.sum()
 
     assert x.shape == orig_shape
-    return x
+    return np.array(x)
 
 
 def test_softmax_basic():

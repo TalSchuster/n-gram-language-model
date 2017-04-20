@@ -26,10 +26,17 @@ def forward(data, label, params, dimensions):
     ofs += H * Dy
     b2 = np.reshape(params[ofs:ofs + Dy], (1, Dy))
 
+    # Forward pass
+    M = int(data.shape[0])
+    # forward propagation
+    a = np.matmul(data, W1) + np.tile(b1, (M, 1))
+    h = sigmoid(a)
+    theta = np.matmul(h, W2) + np.tile(b2, (M, 1))
+    output = softmax(theta)
+
     # Compute the probability
-    ### YOUR CODE HERE: forward propagation
-    raise NotImplementedError
-    ### END YOUR CODE
+    return output[label]
+
 
 def forward_backward_prop(data, labels, params, dimensions):
     """
@@ -58,23 +65,24 @@ def forward_backward_prop(data, labels, params, dimensions):
     ofs += H * Dy
     b2 = np.reshape(params[ofs:ofs + Dy], (1, Dy))
 
-    M = data.shape[0]
-    ### YOUR CODE HERE: forward propagation
-    a = np.matmul(data, W1) + np.tile(b1, (M, H))
+    M = int(data.shape[0])
+    # forward propagation
+    a = np.matmul(data, W1) + np.tile(b1, (M, 1))
     h = sigmoid(a)
-    theta = np.matmul(h,W2) + np.tile(b2, (M,Dy))
+    theta = np.matmul(h, W2) + np.tile(b2, (M, 1))
     output = softmax(theta)
-    cost = np.sum(np.mul(-np.log(output),labels))
+    log_output = np.log2(output)
+    cost = np.sum(-(log_output * labels), 1)
     
-    ### END YOUR CODE
+    # backward propagation
+    helper = output - labels
+    gradb2 = np.average(helper, 0)
+    gradW2 = np.average(np.matmul(h.transpose(), helper), 0)
+    nabla_j = np.matmul(helper, W2.transpose()) * h * (1 - h)
+    gradb1 = np.average(nabla_j, 0)
+    gradW1 = np.average(np.matmul(data.transpose(), nabla_j), 0)
 
-    ### YOUR CODE HERE: backward propagation
-    gradb2 = output - labels
-    gradW2 = np.matmul(h.transpose(), gradb2)
-    raise NotImplementedError
-    ### END YOUR CODE
-
-    ### Stack gradients (do not modify)
+    # Stack gradients (do not modify)
     grad = np.concatenate((gradW1.flatten(), gradb1.flatten(),
         gradW2.flatten(), gradb2.flatten()))
 
