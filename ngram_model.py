@@ -36,9 +36,9 @@ def train_ngrams(dataset):
             if uni not in unigram_counts:
                 unigram_counts[uni] = 0
 
-            unigram_counts[uni] += 1
 
             if i >= 1:
+                unigram_counts[uni] += 1
                 bi = (sent[i-1], sent[i])
                 if bi not in bigram_counts:
                     bigram_counts[bi] = 0
@@ -59,28 +59,29 @@ def train_ngrams(dataset):
 
 def get_unigram_probabilty(word_index, unigram_counts, train_token_count):
     if word_index in unigram_counts:
-        return np.float64(unigram_counts[word_index])/train_token_count
-    return np.float64(0)
+        return np.float128(unigram_counts[word_index])/train_token_count
+    return np.float128(0)
 
 def get_bigram_probabilty(first_word_index, second_word_index, bigram_counts, unigram_counts):
     two_tuple = (first_word_index, second_word_index)
     if two_tuple in bigram_counts:
-        return np.float64(bigram_counts[two_tuple])/unigram_counts[first_word_index]
-    return np.float64(0)
+        return np.float128(bigram_counts[two_tuple])/unigram_counts[first_word_index]
+    return np.float128(0)
 
 def get_trigram_probabilty(first_word_index, second_word_index, third_word_index, trigram_counts, bigram_counts):
     three_tuple = (first_word_index, second_word_index, third_word_index)
     two_tuple = (first_word_index, second_word_index)
     if three_tuple in trigram_counts:
-        return np.float64(trigram_counts[three_tuple])/bigram_counts[two_tuple]
-    return np.float64(0)
+        return np.float128(trigram_counts[three_tuple])/bigram_counts[two_tuple]
+    return np.float128(0)
 
 def evaluate_ngrams(eval_dataset, trigram_counts, bigram_counts, unigram_counts, train_token_count, lambda1, lambda2):
     """
     goes over an evaluation dataset and computes the perplexity for it with
     the current counts and a linear interpolation
     """
-    perplexity = 0
+    log_sum = 0
+    word_count = 0
     for sentence in eval_dataset:
         for word_num in xrange(2, len(sentence)):
             # Calculating the three probabilities (unigram, bigram and trigram)
@@ -91,9 +92,12 @@ def evaluate_ngrams(eval_dataset, trigram_counts, bigram_counts, unigram_counts,
             # Calculating the prob. of this word to be the next word in the
             # sentence.
             prob_word = lambda1 * prob_unigram + lambda2 * prob_bigram + (1 - lambda1 - lambda2) * prob_trigram
-            perplexity += np.log2(prob_word)
-    perplexity /= train_token_count
-    perplexity = np.power(2, -perplexity)
+            log_sum += np.log2(prob_word)
+
+            word_count += 1
+
+    log_sum /= word_count
+    perplexity = np.power(2, -log_sum)
     return perplexity
 
 def test_ngram():
@@ -124,7 +128,7 @@ def test_ngram():
     perplexity = min_perp
     lambda1, lambda2 = min_lambda
     print '## Minimum perplexity resluts:'
-    print 'lamda1: %.2f lambda2: %.2f lambda3: %.2f perplexity: %s' % (lambda1, lambda2, 1.0 - lambda1 - lambda2, perplexity)
+    print 'lamdba1: %.2f lambda2: %.2f lambda3: %.2f perplexity: %s' % (lambda1, lambda2, 1.0 - lambda1 - lambda2, perplexity)
 
 
 if __name__ == "__main__":
