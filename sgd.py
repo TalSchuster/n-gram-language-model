@@ -86,6 +86,7 @@ def sgd(f, x0, step, iterations, postprocessing=None, useSaved=False,
         cost = None
         
         cost, grad = f(x)
+        # print type(step), x.shape, grad.shape
         x -= step * grad
         x = postprocessing(x)
 

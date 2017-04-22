@@ -27,15 +27,15 @@ def forward(data, label, params, dimensions):
     b2 = np.reshape(params[ofs:ofs + Dy], (1, Dy))
 
     # Forward pass
-    M = int(data.shape[0])
+    # M = int(data.shape[0])
     # forward propagation
-    a = np.matmul(data, W1) + np.tile(b1, (M, 1))
+    a = np.matmul(data, W1) + b1  # np.tile(b1, (M, 1))
     h = sigmoid(a)
-    theta = np.matmul(h, W2) + np.tile(b2, (M, 1))
+    theta = np.matmul(h, W2) + b2  # np.tile(b2, (M, 1))
     output = softmax(theta)
 
     # Compute the probability
-    return output[label]
+    return output[0][label]
 
 
 def forward_backward_prop(data, labels, params, dimensions):
@@ -64,6 +64,7 @@ def forward_backward_prop(data, labels, params, dimensions):
     W2 = np.reshape(params[ofs:ofs + H * Dy], (H, Dy))
     ofs += H * Dy
     b2 = np.reshape(params[ofs:ofs + Dy], (1, Dy))
+    # print W1.shape, b1.shape, W2.shape, b2.shape
 
     M = int(data.shape[0])
     # forward propagation
@@ -72,19 +73,24 @@ def forward_backward_prop(data, labels, params, dimensions):
     theta = np.matmul(h, W2) + np.tile(b2, (M, 1))
     output = softmax(theta)
     log_output = np.log2(output)
-    cost = np.sum(-(log_output * labels), 1)
+    cost = np.sum(-(log_output * labels))
     
     # backward propagation
-    helper = output - labels
-    gradb2 = np.average(helper, 0)
-    gradW2 = np.average(np.matmul(h.transpose(), helper), 0)
+    helper = np.log2(np.e) * (output - labels)
+    gradb2 = np.sum(helper, 0)
+    gradW2 = np.sum(np.matmul(np.expand_dims(h, 2), np.expand_dims(helper, 1)), 0)
     nabla_j = np.matmul(helper, W2.transpose()) * h * (1 - h)
-    gradb1 = np.average(nabla_j, 0)
-    gradW1 = np.average(np.matmul(data.transpose(), nabla_j), 0)
+    gradb1 = np.sum(nabla_j, 0)
+    gradW1 = np.sum(np.matmul(np.expand_dims(data, 2), np.expand_dims(nabla_j, 1)), 0)
 
     # Stack gradients (do not modify)
     grad = np.concatenate((gradW1.flatten(), gradb1.flatten(),
         gradW2.flatten(), gradb2.flatten()))
+    """print "shapes"
+    print gradW2.shape, W2.shape, h.shape, helper.shape
+    print gradb2.shape, b2.shape
+    print gradW1.shape, W1.shape, data.shape, nabla_j.shape
+    print gradb1.shape, b1.shape"""
 
     return cost, grad
 
@@ -118,11 +124,8 @@ def your_sanity_checks():
     your additional tests be graded.
     """
     print "Running your sanity checks..."
-    ### YOUR CODE HERE
-    raise NotImplementedError
-    ### END YOUR CODE
-
+    pass
 
 if __name__ == "__main__":
     sanity_check()
-    your_sanity_checks()
+    #your_sanity_checks()

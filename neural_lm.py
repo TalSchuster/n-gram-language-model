@@ -11,7 +11,7 @@ from sgd import *
 
 
 VOCAB_EMBEDDING_PATH = "data/lm/vocab.embeddings.glove.txt"
-BATCH_SIZE = 50
+BATCH_SIZE = 40
 NUM_OF_SGD_ITERATIONS = 40000
 LEARNING_RATE = 0.3
 
@@ -70,18 +70,51 @@ def int_to_one_hot(number, dim):
     return res
 
 def lm_wrapper(in_word_index, out_word_index, num_to_word_embedding, dimensions, params):
-
     data = np.zeros([BATCH_SIZE, input_dim])
     labels = np.zeros([BATCH_SIZE, output_dim])
 
     # Construct the data batch and run you backpropogation implementation
-    ### YOUR CODE HERE
-    raise NotImplementedError
-    ### END YOUR CODE
+    sampled_indices = np.random.choice(num_of_examples, BATCH_SIZE, replace=False)
+
+    for i, index in enumerate(sampled_indices):
+        data[i] = num_to_word_embedding[in_word_index[index]]
+        labels[i] = int_to_one_hot(out_word_index[index], output_dim)
+
+    cost, grad = forward_backward_prop(data, labels, params, dimensions)
+
+    # Dealing with the case we reached the end of the data
+    cost /= BATCH_SIZE
+    grad /= BATCH_SIZE
+    return cost, grad
+
+"""
+def lm_wrapper(in_word_index, out_word_index, num_to_word_embedding, dimensions, params):
+    batchsize = BATCH_SIZE
+    if curr_index + BATCH_SIZE > num_of_examples:
+        batchsize = num_of_examples - curr_index
+
+    data = np.zeros([batchsize, input_dim])
+    labels = np.zeros([batchsize, output_dim])
+
+    # Construct the data batch and run you backpropogation implementation
+    in_word_indices = in_word_index[curr_index:curr_index + batchsize]
+    out_word_indices = out_word_index[curr_index:curr_index + batchsize]
+
+    for i, index in enumerate(in_word_indices):
+        data[i] = num_to_word_embedding[index]
+        labels[i] = int_to_one_hot(out_word_indices[i], output_dim)
+
+    cost, grad = forward_backward_prop(data, labels, params, dimensions)
+
+    curr_index += BATCH_SIZE
+    # Dealing with the case we reached the end of the data
+    if curr_index > len(in_word_index):
+        curr_index = 0
 
     cost /= BATCH_SIZE
     grad /= BATCH_SIZE
     return cost, grad
+"""
 
 def eval_neural_lm(eval_data_path):
     """
@@ -93,16 +126,18 @@ def eval_neural_lm(eval_data_path):
     num_of_examples = len(in_word_index)
 
     perplexity = 0
-    ### YOUR CODE HERE
-    raise NotImplementedError
-    ### END YOUR CODE
+    for i, in_index in enumerate(in_word_index):
+        input_data = num_to_word_embedding[in_index]
+        ground_truth_prob = forward(input_data, out_word_index[i], params, dimensions)
+        perplexity += np.log2(ground_truth_prob)
+    perplexity /= num_of_examples
+    perplexity = np.power(2, -perplexity)
 
     return perplexity
 
 if __name__ == "__main__":
     # Load the vocabulary
-    vocab = pd.read_table("data/lm/vocab.ptb.txt", header=None, sep="\s+",
-			 index_col=0, names=['count', 'freq'], )
+    vocab = pd.read_table("data/lm/vocab.ptb.txt", header=None, sep="\s+", index_col=0, names=['count', 'freq'], )
 
     vocabsize = 2000
     num_to_word = dict(enumerate(vocab.index[:vocabsize]))
@@ -125,7 +160,7 @@ if __name__ == "__main__":
     # Initialize parameters randomly
     # Construct the params
     input_dim = 50
-    hidden_dim = 50
+    hidden_dim = 45
     output_dim = vocabsize
     dimensions = [input_dim, hidden_dim, output_dim]
     params = np.random.randn((input_dim + 1) * hidden_dim + (
