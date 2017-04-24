@@ -74,7 +74,7 @@ def forward_backward_prop(data, labels, params, dimensions):
     output = softmax(theta)
     log_output = np.log(output)
     cost = np.sum(-(log_output * labels))
-    
+
     # backward propagation
     helper = output - labels
     gradb2 = np.sum(helper, 0)
