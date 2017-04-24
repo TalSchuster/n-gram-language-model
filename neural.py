@@ -72,11 +72,11 @@ def forward_backward_prop(data, labels, params, dimensions):
     h = sigmoid(a)
     theta = np.matmul(h, W2) + np.tile(b2, (M, 1))
     output = softmax(theta)
-    log_output = np.log2(output)
+    log_output = np.log(output)
     cost = np.sum(-(log_output * labels))
-    
+
     # backward propagation
-    helper = np.log2(np.e) * (output - labels)
+    helper = output - labels
     gradb2 = np.sum(helper, 0)
     gradW2 = np.sum(np.matmul(np.expand_dims(h, 2), np.expand_dims(helper, 1)), 0)
     nabla_j = np.matmul(helper, W2.transpose()) * h * (1 - h)
