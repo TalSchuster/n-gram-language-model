@@ -13,7 +13,7 @@ from sgd import *
 VOCAB_EMBEDDING_PATH = "data/lm/vocab.embeddings.glove.txt"
 BATCH_SIZE = 40
 NUM_OF_SGD_ITERATIONS = 40000
-LEARNING_RATE = 0.3
+LEARNING_RATE = 0.4
 
 def load_vocab_embeddings(path=VOCAB_EMBEDDING_PATH):
     result = []
